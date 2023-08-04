@@ -18,7 +18,11 @@ func main() {
 		ServiceDescription: "...",
 	}
 
-	startAction := func() {
+	startAction := func(cCtx *cli.Context) {
+		arg1 := cCtx.Bool("test")
+		fmt.Println("arg test:", arg1)
+		fmt.Println("arg configFile:", configFile)
+
 		fmt.Println("programme start")
 	}
 	stopAction := func() error {
@@ -44,6 +48,14 @@ func main() {
 			Usage:       "the log level, overwrite the config file's log level. e.g., debug, info, warn, error, fatal, panic",
 			Value:       "",
 			Destination: &logLevel,
+		},
+		&cli.BoolFlag{
+			// ./xx --test  cCtx.Bool("test") => true
+			// ./xx			cCtx.Bool("test") => false
+			Name: "test",
+			//Aliases:     []string{"t"},
+			Usage: "test参数，不使用设置Destination方式接收",
+			Value: false,
 		},
 	}
 	var commands []*cli.Command

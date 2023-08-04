@@ -22,11 +22,11 @@ var (
 
 type XCli struct {
 	serviceConfig *ServiceConfig
-	startCallback func()
+	startCallback func(cCtx *cli.Context)
 	stopCallback  func() error
 }
 
-func New(conf *ServiceConfig, startCallback func(), stopCallback func() error) (*XCli, error) {
+func New(conf *ServiceConfig, startCallback func(cCtx *cli.Context), stopCallback func() error) (*XCli, error) {
 	xCli := &XCli{
 		serviceConfig: conf,
 		startCallback: startCallback,
@@ -35,7 +35,7 @@ func New(conf *ServiceConfig, startCallback func(), stopCallback func() error) (
 	return xCli, nil
 }
 
-func (x *XCli) createSystemService() (service.Service, error) {
+func (x *XCli) createSystemService(cCtx *cli.Context) (service.Service, error) {
 	conf := x.serviceConfig
 	startCallback := x.startCallback
 	stopCallback := x.stopCallback
@@ -66,6 +66,7 @@ func (x *XCli) createSystemService() (service.Service, error) {
 	}
 
 	ss := &SystemService{
+		cCtx:          cCtx,
 		startCallback: startCallback,
 		stopCallback:  stopCallback,
 	}
@@ -135,7 +136,7 @@ func (x *XCli) Start(flags []cli.Flag, commands []*cli.Command) {
 		Flags: flags,
 		Action: func(cCtx *cli.Context) error {
 			//在参数解析之后createSystemService，因为其内部可能用到了command参数
-			systemService, err := x.createSystemService()
+			systemService, err := x.createSystemService(cCtx)
 			if err != nil {
 				return err
 			}
@@ -156,15 +157,15 @@ func (x *XCli) Start(flags []cli.Flag, commands []*cli.Command) {
 	}
 }
 
-func (x *XCli) controlAction(c *cli.Context) error {
+func (x *XCli) controlAction(cCtx *cli.Context) error {
 	//在参数解析之后createSystemService，因为其内部可能用到了command参数
-	systemService, err := x.createSystemService()
+	systemService, err := x.createSystemService(cCtx)
 	if err != nil {
 		return err
 	}
-	err = service.Control(systemService, c.Command.Name)
+	err = service.Control(systemService, cCtx.Command.Name)
 	if err != nil {
-		logrus.Errorf("service %s failed, err: %v", c.Command.Name, err)
+		logrus.Errorf("service %s failed, err: %v", cCtx.Command.Name, err)
 		return err
 	}
 	return nil
