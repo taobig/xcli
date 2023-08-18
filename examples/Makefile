@@ -1,5 +1,6 @@
 
 # 以下划线命名，这样在auto-complete时不会出现
+_targetName = main
 #_buildFlag = -ldflags "-s -w -X 'main.buildTime=`date -u '+%Y-%m-%dT%H:%M:%SZ'`' -X main.gitHash=`git rev-parse --short HEAD` -X 'main.goVersion=`go version`' "
 _buildFlag = -ldflags "-s -w -X 'github.com/taobig/xcli.buildTime=`date -u '+%Y-%m-%dT%H:%M:%SZ'`' -X github.com/taobig/xcli.gitHash=`git rev-parse --short HEAD` -X 'github.com/taobig/xcli.goVersion=`go version`' "
 
@@ -7,23 +8,23 @@ all: help
 
 .PHONY: build
 build:
-	@CGO_ENABLED=0 go build -o main $(_buildFlag) .
-	$(if $(shell command -v upx), upx main)
+	@CGO_ENABLED=0 go build -o $(_targetName) $(_buildFlag) .
+	$(if $(shell command -v upx), upx $(_targetName))
 
 .PHONY: buildlinux
 buildlinux:
-	@GOOS=linux CGO_ENABLED=0 go build -o main-linux $(_buildFlag) .
-	@$(if $(shell command -v upx), upx main-linux)
+	@GOOS=linux CGO_ENABLED=0 go build -o $(_targetName)-linux $(_buildFlag) .
+	@$(if $(shell command -v upx), upx $(_targetName)-linux)
 
 .PHONY: buildwin
 buildwin:
-	@GOOS=windows CGO_ENABLED=0 go build -o main.exe $(_buildFlag) .
-	@$(if $(shell command -v upx), upx main.exe)
+	@GOOS=windows CGO_ENABLED=0 go build -o $(_targetName).exe $(_buildFlag) .
+	@$(if $(shell command -v upx), upx $(_targetName).exe)
 
 .PHONY: builddarwin
 builddarwin:
-	@GOOS=darwin CGO_ENABLED=0 go build -o main-darwin $(_buildFlag) .
-	@$(if $(shell command -v upx), upx main-darwin)
+	@GOOS=darwin CGO_ENABLED=0 go build -o $(_targetName)-darwin $(_buildFlag) .
+	@$(if $(shell command -v upx), upx $(_targetName)-darwin)
 
 .PHONY: buildall
 buildall: buildlinux buildwin builddarwin
@@ -34,11 +35,11 @@ test:
 
 .PHONY: clean
 clean:
-	@go clean
-#	@rm -vf main 多此一举，因为go clean已经做了
-#	@rm -vf main.exe 多此一举，因为go clean已经做了
-	@rm -vf main-linux
-	@rm -vf main-darwin
+	@go clean -x
+	@rm -vf $(_targetName)
+	@rm -vf $(_targetName).exe
+	@rm -vf $(_targetName)-linux
+	@rm -vf $(_targetName)-darwin
 
 .PHONY: help
 help:
