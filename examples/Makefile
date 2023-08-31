@@ -3,27 +3,28 @@
 _targetName = main
 #_buildFlag = -ldflags "-s -w -X 'main.buildTime=`date -u '+%Y-%m-%dT%H:%M:%SZ'`' -X main.gitHash=`git rev-parse --short HEAD` -X 'main.goVersion=`go version`' "
 _buildFlag = -ldflags "-s -w -X 'github.com/taobig/xcli.buildTime=`date -u '+%Y-%m-%dT%H:%M:%SZ'`' -X github.com/taobig/xcli.gitHash=`git rev-parse --short HEAD` -X 'github.com/taobig/xcli.goVersion=`go version`' "
+_buildTag = -tags urfave_cli_no_docs # https://cli.urfave.org/#urfave_cli_no_docs
 
 all: help
 
 .PHONY: build
 build:
-	@CGO_ENABLED=0 go build -o $(_targetName) $(_buildFlag) .
+	@CGO_ENABLED=0 go build -o $(_targetName) $(_buildFlag) $(_buildTag) .
 	$(if $(shell command -v upx), upx $(_targetName))
 
 .PHONY: buildlinux
 buildlinux:
-	@GOOS=linux CGO_ENABLED=0 go build -o $(_targetName)-linux $(_buildFlag) .
+	@GOOS=linux CGO_ENABLED=0 go build -o $(_targetName)-linux $(_buildFlag) $(_buildTag) .
 	@$(if $(shell command -v upx), upx $(_targetName)-linux)
 
 .PHONY: buildwin
 buildwin:
-	@GOOS=windows CGO_ENABLED=0 go build -o $(_targetName).exe $(_buildFlag) .
+	@GOOS=windows CGO_ENABLED=0 go build -o $(_targetName).exe $(_buildFlag) $(_buildTag) .
 	@$(if $(shell command -v upx), upx $(_targetName).exe)
 
 .PHONY: builddarwin
 builddarwin:
-	@GOOS=darwin CGO_ENABLED=0 go build -o $(_targetName)-darwin $(_buildFlag) .
+	@GOOS=darwin CGO_ENABLED=0 go build -o $(_targetName)-darwin $(_buildFlag) $(_buildTag) .
 	@$(if $(shell command -v upx), upx $(_targetName)-darwin)
 
 .PHONY: buildall
