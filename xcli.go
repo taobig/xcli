@@ -1,11 +1,14 @@
 package xcli
 
 import (
+	"bufio"
 	"fmt"
 	"github.com/kardianos/service"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
+	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 )
@@ -78,6 +81,24 @@ func (x *XCli) createSystemService(cCtx *cli.Context) (service.Service, error) {
 }
 
 func (x *XCli) Start(flags []cli.Flag, commands []*cli.Command) {
+	logCommandUsageText := ""
+	platform := service.Platform()
+	if platform == "linux-systemd" {
+		logCommandUsageText = "" +
+			"ServiceType: " + platform + "\n" +
+			"journalctl commands:" + "\n" +
+			"journalctl -u " + x.serviceConfig.ServiceName + "\n" +
+			"journalctl -n 10 -u " + x.serviceConfig.ServiceName + "\n" +
+			"journalctl -f -u " + x.serviceConfig.ServiceName + "\n" +
+			"journalctl --disk-usage 检查当前journal使用磁盘量\n" +
+			"journalctl --vacuum-time=2d 只保留两天的日志\n" +
+			"journalctl --vacuum-size=1G 只保留1G的日志\n" +
+			"journalctl --vacuum-files=2 只保留最近的两个日志文件\n"
+
+	} else if platform == "darwin-launchd" {
+		//logCommandUsageText = "..."
+	}
+
 	defaultCommands := []*cli.Command{
 		{
 			Name:  "version",
@@ -128,6 +149,38 @@ func (x *XCli) Start(flags []cli.Flag, commands []*cli.Command) {
 			Name:   "stop",
 			Action: x.controlAction,
 		},
+		{
+			Name:      "log",
+			Usage:     "show log",
+			UsageText: logCommandUsageText,
+			Flags: []cli.Flag{
+				&cli.BoolFlag{
+					Name:    "follow",
+					Aliases: []string{"f"},
+					Usage:   "Show only the most recent journal entries, and continuously print new entries as they are appended to the journal.",
+					Value:   false,
+					//Destination: ,
+				},
+			},
+			Action: func(cCtx *cli.Context) error {
+				if platform == "linux-systemd" {
+					serviceName := x.serviceConfig.ServiceName
+					//journalctl -u xxxxx.service
+					//journalctl -f -u xxxxx.service
+					follow := cCtx.Bool("follow")
+					if follow {
+						cmd := exec.Command("journalctl", "-f", "-u", serviceName)
+						return runCommand(cmd, "StdoutPipe")
+					} else {
+						cmd := exec.Command("journalctl", "-u", serviceName)
+						return runCommand(cmd, "Stdout")
+					}
+				} else {
+					fmt.Println(service.Platform() + " not support")
+				}
+				return nil
+			},
+		},
 	}
 	allCommands := append(defaultCommands, commands...)
 	app := &cli.App{
@@ -167,6 +220,55 @@ func (x *XCli) controlAction(cCtx *cli.Context) error {
 	if err != nil {
 		logrus.Errorf("service %s failed, err: %v", cCtx.Command.Name, err)
 		return err
+	}
+	return nil
+}
+
+func runCommand(cmd *exec.Cmd, outputType string) error {
+	fmt.Printf("cmd: %s\n", cmd)
+
+	if outputType == "StdoutPipe" {
+		pipe, err := cmd.StdoutPipe()
+		if err != nil {
+			logrus.Errorf("cmd.StdoutPipe() failed with %s", err)
+			return err
+		}
+		if err = cmd.Start(); err != nil {
+			logrus.Errorf("cmd.Start() failed with %s", err)
+			return err
+		}
+		go func(p io.ReadCloser) {
+			reader := bufio.NewReader(pipe)
+			line, err := reader.ReadString('\n')
+			for err == nil {
+				fmt.Println(line)
+				line, err = reader.ReadString('\n')
+			}
+		}(pipe)
+		if err = cmd.Wait(); err != nil {
+			logrus.Errorf("cmd.Wait() failed with %s", err)
+			return err
+		}
+	} else if outputType == "Stdout" {
+		//cmd.Stdout = os.Stdout
+		//cmd.Stderr = os.Stderr
+		//err := cmd.Run()
+		//if err != nil {
+		//	logrus.Errorf("cmd.Run() failed with %s", err)
+		//	return err
+		//}
+		out, err := cmd.Output()
+		if err != nil {
+			logrus.Errorf("cmd.Output() failed with %s", err)
+			return err
+		}
+		fmt.Println(string(out))
+		//out, err := cmd.CombinedOutput()
+		//if err != nil {
+		//	logrus.Fatalf("cmd.Run() failed with %s", err)
+		//	return err
+		//}
+		//fmt.Println(string(out))
 	}
 	return nil
 }
