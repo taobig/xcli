@@ -19,9 +19,8 @@ func main() {
 	}
 
 	startAction := func(cCtx *cli.Context) {
-		arg1 := cCtx.Bool("test")
-		fmt.Println("arg test:", arg1)
-		fmt.Println("arg configFile:", configFile)
+		fmt.Println("arg test:", cCtx.Bool("test")) //获取参数示例一
+		fmt.Println("arg configFile:", configFile)  //获取参数示例二
 
 		fmt.Println("programme start")
 	}
