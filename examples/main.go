@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/taobig/xcli"
 	"github.com/urfave/cli/v2"
+	"syscall"
 )
 
 var (
@@ -23,6 +24,12 @@ func main() {
 		fmt.Println("arg configFile:", configFile)  //获取参数示例二
 
 		fmt.Println("programme start")
+
+		// 如果执行完以上内容就希望结束进程
+		err := syscall.Kill(syscall.Getpid(), syscall.SIGTERM)
+		if err != nil {
+			panic(err)
+		}
 	}
 	stopAction := func() error {
 		fmt.Println("programme exit")
