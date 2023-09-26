@@ -5,14 +5,17 @@
 
 ## Command line interface
 ```shell
-./xcli install -h
+./xcli -h # 查看帮助
+./xcli install -h # 查看安装帮助
+# install service
 sudo ./xcli install -r "-f,prod-config.yaml"  -r "--logLevel,debug"
 
-sudo ./xcli uninstall
-sudo ./xcli start
-sudo ./xcli stop
-sudo ./xcli restart
+sudo ./xcli uninstall # uninstall service
+sudo ./xcli start # start service
+sudo ./xcli stop # stop service
+sudo ./xcli restart # restart service
 
-./xcli log
-./xcli log -f
+./xcli log -h # 查看日志帮助
+./xcli log # 查看日志
+./xcli log -f # 查看日志并跟踪
 ```
