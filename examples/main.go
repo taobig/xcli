@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/taobig/xcli"
 	"github.com/urfave/cli/v2"
+	"os"
 	"syscall"
 )
 
@@ -17,11 +18,16 @@ func main() {
 		ServiceName:        "demoService",
 		ServiceDisplayName: "demoService",
 		ServiceDescription: "...",
+		EnvVars: map[string]string{
+			"ENV_VAR": "value",
+		},
 	}
 
 	startAction := func(cCtx *cli.Context) {
 		fmt.Println("arg test:", cCtx.Bool("test")) //获取参数示例一
 		fmt.Println("arg configFile:", configFile)  //获取参数示例二
+
+		fmt.Println("ENV_VAR:", os.Getenv("ENV_VAR")) //获取环境变量示例
 
 		fmt.Println("programme start")
 

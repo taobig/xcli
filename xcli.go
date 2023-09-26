@@ -66,6 +66,7 @@ func (x *XCli) createSystemService(cCtx *cli.Context) (service.Service, error) {
 		//Option: service.KeyValue{
 		//	"Restart": "always", // Restart=always
 		//},
+		EnvVars: conf.EnvVars,
 	}
 
 	ss := &SystemService{
