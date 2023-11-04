@@ -9,6 +9,8 @@
 ./xcli install -h # 查看安装帮助
 # install service
 sudo ./xcli install -r "-f,prod-config.yaml"  -r "--logLevel,debug"
+# use environment variables
+XCLI_LOG_LEVEL=debug sudo ./xcli install -r "-f,prod-config.yaml"  -r "--logLevel,debug"
 
 sudo ./xcli uninstall # uninstall service
 sudo ./xcli start # start service
