@@ -2,6 +2,7 @@ name: goreleaser
 
 on:
   push:
+#    branches: [ 'release', 'master' ]
     # run only against tags
     tags:
       - '*'
