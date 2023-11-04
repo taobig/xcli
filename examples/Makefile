@@ -10,7 +10,7 @@ all: help
 .PHONY: build
 build:
 	@CGO_ENABLED=0 go build -o $(_targetName) $(_buildFlag) $(_buildTag) .
-	$(if $(shell command -v upx), upx $(_targetName))
+#	$(if $(shell command -v upx), upx $(_targetName))
 
 .PHONY: buildlinux
 buildlinux:
@@ -25,7 +25,7 @@ buildwin:
 .PHONY: builddarwin
 builddarwin:
 	@GOOS=darwin CGO_ENABLED=0 go build -o $(_targetName)-darwin $(_buildFlag) $(_buildTag) .
-	@$(if $(shell command -v upx), upx $(_targetName)-darwin)
+#	@$(if $(shell command -v upx), upx $(_targetName)-darwin)
 
 .PHONY: buildall
 buildall: buildlinux buildwin builddarwin
