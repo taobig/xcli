@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/taobig/xcli"
+	"github.com/taobig/xcli/examples/internal"
 	"github.com/urfave/cli/v2"
 	"os"
 )
@@ -31,7 +32,7 @@ func main() {
 		fmt.Println("programme start")
 
 		// 如果执行完以上内容就希望结束进程
-		err := killProcess()
+		err := internal.KillProcess()
 		if err != nil {
 			panic(err)
 		}
