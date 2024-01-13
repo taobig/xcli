@@ -9,22 +9,22 @@ all: help
 
 .PHONY: build
 build:
-	@CGO_ENABLED=0 go build -o $(_targetName) $(_buildFlag) $(_buildTag) .
+	@CGO_ENABLED=0 go build --trimpath -o $(_targetName) $(_buildFlag) $(_buildTag) .
 #	$(if $(shell command -v upx), upx $(_targetName))
 
 .PHONY: buildlinux
 buildlinux:
-	@GOOS=linux CGO_ENABLED=0 go build -o $(_targetName)-linux $(_buildFlag) $(_buildTag) .
+	@GOOS=linux CGO_ENABLED=0 go build --trimpath -o $(_targetName)-linux $(_buildFlag) $(_buildTag) .
 	@$(if $(shell command -v upx), upx $(_targetName)-linux)
 
 .PHONY: buildwin
 buildwin:
-	@GOOS=windows CGO_ENABLED=0 go build -o $(_targetName).exe $(_buildFlag) $(_buildTag) .
+	@GOOS=windows CGO_ENABLED=0 go build --trimpath -o $(_targetName).exe $(_buildFlag) $(_buildTag) .
 	@$(if $(shell command -v upx), upx $(_targetName).exe)
 
 .PHONY: builddarwin
 builddarwin:
-	@GOOS=darwin CGO_ENABLED=0 go build -o $(_targetName)-darwin $(_buildFlag) $(_buildTag) .
+	@GOOS=darwin CGO_ENABLED=0 go build --trimpath -o $(_targetName)-darwin $(_buildFlag) $(_buildTag) .
 #	@$(if $(shell command -v upx), upx $(_targetName)-darwin)
 
 .PHONY: buildall
