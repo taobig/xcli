@@ -32,7 +32,7 @@ func main() {
 		fmt.Println("programme start")
 
 		// 如果执行完以上内容就希望结束进程
-		err := internal.KillProcess()
+		err := internal.KillProcessItself()
 		if err != nil {
 			panic(err)
 		}
