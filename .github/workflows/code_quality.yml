@@ -5,8 +5,7 @@ on:
   push:
     branches:
       - master
-      - feature/qodana
-      - 'releases/*'
+#      - 'releases/*'
 
 jobs:
   qodana:
