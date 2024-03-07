@@ -189,7 +189,7 @@ func (x *XCli) Start(flags []cli.Flag, commands []*cli.Command) {
 				if platform == "linux-systemd" {
 					serviceName := x.serviceConfig.ServiceName
 					//systemctl status xxxxx.service
-					cmd := exec.Command("systemctl ", " status", serviceName)
+					cmd := exec.Command("systemctl", " status", serviceName)
 					return runCommand(cmd, "StdoutPipe")
 				} else {
 					fmt.Println(service.Platform() + " not support")
