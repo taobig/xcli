@@ -13,6 +13,11 @@ builds:
       - linux
       - windows
       - darwin
+# shell: BuildTime=$(date -u '+%Y-%m-%dT%H:%M:%SZ') CommitHash=$(git rev-parse --short HEAD) goreleaser release --snapshot --clean
+    ldflags:
+      - -s -w -X github.com/taobig/xcli.buildTime={{.Env.BuildTime}} -X github.com/taobig/xcli.gitHash={{.Env.CommitHash}}
+    tags:
+      - urfave_cli_no_docs
 
 archives:
   - format: tar.gz
