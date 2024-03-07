@@ -1,6 +1,6 @@
 module github.com/taobig/xcli
 
-go 1.17
+go 1.18
 
 retract v0.0.8
 
