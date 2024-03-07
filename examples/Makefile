@@ -36,11 +36,8 @@ test:
 
 .PHONY: clean
 clean:
-	@go clean -x
-	@rm -vf $(_targetName)
-	@rm -vf $(_targetName).exe
-	@rm -vf $(_targetName)-linux
-	@rm -vf $(_targetName)-darwin
+	@go clean # -x The -x flag causes clean to print remove commands as it executes them.
+	@rm -f $(_targetName) $(_targetName)-linux $(_targetName).exe $(_targetName)-darwin
 
 .PHONY: help
 help:
