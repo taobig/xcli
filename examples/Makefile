@@ -1,8 +1,8 @@
 
 # 以下划线命名，这样在auto-complete时不会出现
 _targetName = main
-#_buildFlag = -ldflags "-s -w -X 'main.buildTime=`date -u '+%Y-%m-%dT%H:%M:%SZ'`' -X main.gitHash=`git rev-parse --short HEAD` -X 'main.goVersion=`go version`' "
-_buildFlag = -ldflags "-s -w -X 'github.com/taobig/xcli.buildTime=`date -u '+%Y-%m-%dT%H:%M:%SZ'`' -X github.com/taobig/xcli.gitHash=`git rev-parse --short HEAD` -X 'github.com/taobig/xcli.goVersion=`go version`' "
+#_buildFlag = -ldflags "-s -w -X 'main.buildTime=`date -u '+%Y-%m-%dT%H:%M:%SZ'`' -X main.gitHash=`git rev-parse --short HEAD` "
+_buildFlag = -ldflags "-s -w -X 'github.com/taobig/xcli.buildTime=`date -u '+%Y-%m-%dT%H:%M:%SZ'`' -X github.com/taobig/xcli.gitHash=`git rev-parse --short HEAD` "
 _buildTag = -tags urfave_cli_no_docs # https://cli.urfave.org/#urfave_cli_no_docs
 
 all: help

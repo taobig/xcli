@@ -17,7 +17,6 @@ var DefaultStopCallback = func() error { return nil }
 var (
 	buildTime = "" //编译时自动填充，请不要人工赋值
 	gitHash   = "" //编译时自动填充，请不要人工赋值
-	goVersion = "" //编译时自动填充，请不要人工赋值
 
 	//workingDirectory string //参数变量
 	installArguments cli.StringSlice //参数变量
@@ -108,7 +107,8 @@ func (x *XCli) Start(flags []cli.Flag, commands []*cli.Command) {
 				//flag.Parse()
 				fmt.Println("build-time:", buildTime)
 				fmt.Println("build-hash:", gitHash)
-				fmt.Println("build-go  :", goVersion)
+				//go1.21有了toolchain指令后，环境变量里go不一定是最终编译使用的go版本，所以请自行使用 go version -m <program> 查看实际编译使用的go版本
+				fmt.Println("build-go  :", "go version -m <program>")
 				return nil
 			},
 		},
@@ -176,6 +176,21 @@ func (x *XCli) Start(flags []cli.Flag, commands []*cli.Command) {
 						cmd := exec.Command("journalctl", "-u", serviceName)
 						return runCommand(cmd, "Stdout")
 					}
+				} else {
+					fmt.Println(service.Platform() + " not support")
+				}
+				return nil
+			},
+		},
+		{
+			Name:  "status",
+			Usage: "show status",
+			Action: func(cCtx *cli.Context) error {
+				if platform == "linux-systemd" {
+					serviceName := x.serviceConfig.ServiceName
+					//systemctl status xxxxx.service
+					cmd := exec.Command("systemctl ", " status", serviceName)
+					return runCommand(cmd, "StdoutPipe")
 				} else {
 					fmt.Println(service.Platform() + " not support")
 				}
