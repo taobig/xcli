@@ -102,7 +102,7 @@ func (x *XCli) Start(flags []cli.Flag, commands []*cli.Command) {
 	defaultCommands := []*cli.Command{
 		{
 			Name:  "version",
-			Usage: "show version",
+			Usage: "Show version",
 			Action: func(cCtx *cli.Context) error {
 				//flag.Parse()
 				fmt.Println("build-time:", buildTime)
@@ -119,7 +119,7 @@ func (x *XCli) Start(flags []cli.Flag, commands []*cli.Command) {
 				//	&cli.StringFlag{
 				//		Name:        "workingDirectory",
 				//		Aliases:     []string{"w"},
-				//		Usage:       "the working directory path, must be an absolute path",
+				//		Usage:       "The working directory path, must be an absolute path",
 				//		Required:    true,
 				//		Destination: &workingDirectory,
 				//	},
@@ -128,7 +128,7 @@ func (x *XCli) Start(flags []cli.Flag, commands []*cli.Command) {
 					// ./xxx install -r '-f,/path/of/config.yaml' # 逗号分隔key和value
 					Name:    "argument",
 					Aliases: []string{"r"},
-					Usage:   "the arguments for install",
+					Usage:   "The arguments for install",
 					//Value:       "",
 					Destination: &installArguments,
 				},
@@ -152,7 +152,7 @@ func (x *XCli) Start(flags []cli.Flag, commands []*cli.Command) {
 		},
 		{
 			Name:      "log",
-			Usage:     "show log",
+			Usage:     "Show logs",
 			UsageText: logCommandUsageText,
 			Flags: []cli.Flag{
 				&cli.BoolFlag{
@@ -184,13 +184,29 @@ func (x *XCli) Start(flags []cli.Flag, commands []*cli.Command) {
 		},
 		{
 			Name:  "status",
-			Usage: "show status",
+			Usage: "Show terse runtime status information about one or more units, followed by most recent log data from the journal.",
+			Flags: []cli.Flag{
+				&cli.BoolFlag{
+					Name: "no-pager",
+					//Aliases: []string{"?"},
+					Usage: "Do not pipe output into a pager.",
+					Value: false,
+					//Destination: ,
+				},
+			},
 			Action: func(cCtx *cli.Context) error {
 				if platform == "linux-systemd" {
 					serviceName := x.serviceConfig.ServiceName
+					//systemctl -l --no-pager status xxxxx.service
 					//systemctl status xxxxx.service
-					cmd := exec.Command("systemctl", " status", serviceName)
-					return runCommand(cmd, "StdoutPipe")
+					noPager := cCtx.Bool("no-pager")
+					if noPager {
+						cmd := exec.Command("systemctl", "-l", "--no-pager", "status", serviceName)
+						return runCommand(cmd, "Stdout")
+					} else {
+						cmd := exec.Command("systemctl", "status", serviceName)
+						return runCommand(cmd, "StdoutPipe")
+					}
 				} else {
 					fmt.Println(service.Platform() + " not support")
 				}
