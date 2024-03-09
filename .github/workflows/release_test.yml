@@ -1,0 +1,42 @@
+name: goreleaser_test
+
+on:
+  push:
+    branches: [ 'master' ]
+    tags:
+      - '*'
+
+jobs:
+  goreleaser:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go: [ '1.18' , '1.19'  , '1.20' , '1.21' , '1.22' ]
+    steps:
+      - name: Set up Go ${{ matrix.go }}
+        uses: actions/setup-go@v5
+        with:
+#          go-version: ^1.13
+          go-version: ${{ matrix.go }}
+        id: go
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: git fetch --force --tags
+
+      # More assembly might be required: Docker logins, GPG, etc. It all depends
+      # on your needs.
+      - uses: goreleaser/goreleaser-action@v5
+        with:
+          # either 'goreleaser' (default) or 'goreleaser-pro':
+          distribution: goreleaser
+          version: latest
+          workdir: examples
+          args: release --snapshot --clean
+        env:
+          BuildTime: ${{ github.event.repository.updated_at }}
+          CommitHash: ${{ github.sha }}
+          # Your GoReleaser Pro key, if you are using the 'goreleaser-pro'
+          # distribution:
+          # GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
