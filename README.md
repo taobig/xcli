@@ -17,7 +17,12 @@ sudo ./xcli start # start service
 sudo ./xcli stop # stop service
 sudo ./xcli restart # restart service
 
-./xcli log -h # 查看日志帮助
-./xcli log # 查看日志
-./xcli log -f # 查看日志并跟踪
+## linux-systemd only
+./xcli log -h # Print a help message
+./xcli log # (equal to `journalctl -u xxxx.service`)
+./xcli log -f # (equal to `journalctl -f -u xxxx.service`)
+
+./xcli status -h # Print a help message
+./xcli status # (equal to `systemctl status xxxx.service`)
+./xcli status --no-pager # (equal to `systemctl status -l --no-pager xxxx.service`)
 ```

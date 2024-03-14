@@ -174,7 +174,7 @@ func (x *XCli) Start(flags []cli.Flag, commands []*cli.Command) {
 						return runCommand(cmd, "StdoutPipe")
 					} else {
 						cmd := exec.Command("journalctl", "-u", serviceName)
-						return runCommand(cmd, "Stdout")
+						return runCommand(cmd, "StdoutWithLess")
 					}
 				} else {
 					fmt.Println(service.Platform() + " not support")
@@ -219,6 +219,8 @@ func (x *XCli) Start(flags []cli.Flag, commands []*cli.Command) {
 		Name: x.serviceConfig.ServiceName,
 		//Usage: "",
 		Flags: flags,
+		//Version:     "version",
+		//HideVersion: false, //内置的查看版本命令: xxx --version/xxx -v，因为使用自定义的xxx version command，所以这里不启用
 		Action: func(cCtx *cli.Context) error {
 			//在参数解析之后createSystemService，因为其内部可能用到了command参数
 			systemService, err := x.createSystemService(cCtx)
@@ -257,7 +259,7 @@ func (x *XCli) controlAction(cCtx *cli.Context) error {
 }
 
 func runCommand(cmd *exec.Cmd, outputType string) error {
-	fmt.Printf("cmd: %s\n", cmd)
+	//fmt.Printf("cmd: %s\n", cmd)
 
 	if outputType == "StdoutPipe" {
 		pipe, err := cmd.StdoutPipe()
@@ -301,6 +303,26 @@ func runCommand(cmd *exec.Cmd, outputType string) error {
 		//	return err
 		//}
 		//fmt.Println(string(out))
+	} else if outputType == "StdoutWithLess" {
+		// more和less都是Linux系统中用于在终端显示文件内容的命令，它们之间有一些区别。
+		// more是一个简单的分页器，只能向下滚动，无法向上滚动，而less是more的改进版本，可以向上和向下滚动，支持更多功能。
+		stdout, err := cmd.StdoutPipe()
+		if err != nil {
+			logrus.Errorf("cmd.StdoutPipe() failed with %s", err)
+			return err
+		}
+		if err = cmd.Start(); err != nil {
+			logrus.Errorf("cmd.Start() failed with %s", err)
+			return err
+		}
+
+		moreCmd := exec.Command("less")
+		moreCmd.Stdin = stdout
+		moreCmd.Stdout = os.Stdout
+		if err = moreCmd.Run(); err != nil {
+			logrus.Errorf("moreCmd.Run() failed with %s", err)
+			return err
+		}
 	}
 	return nil
 }
