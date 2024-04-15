@@ -31,11 +31,15 @@ func main() {
 
 		fmt.Println("programme start")
 
-		// 如果执行完以上内容就希望结束进程
-		err := internal.KillProcessItself()
-		if err != nil {
-			panic(err)
+		{ // optional: 如果执行完以上内容就希望结束进程，可以调用KillProcessItself。这样还是会正常触发stopAction回调的。
+			err := internal.KillProcessItself()
+			if err != nil {
+				panic(err)
+			}
 		}
+
+		// 注意：一定不要在这里执行无限循环、http ListenAndServe()等阻塞操作，否则将会导致程序在执行<start>子命令时无法正常返回
+
 	}
 	stopAction := func() error {
 		fmt.Println("programme exit")
