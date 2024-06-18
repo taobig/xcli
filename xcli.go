@@ -91,10 +91,11 @@ func (x *XCli) Start(flags []cli.Flag, commands []*cli.Command) {
 			"journalctl -n 10 -u " + x.serviceConfig.ServiceName + "\n" +
 			"journalctl -f -u " + x.serviceConfig.ServiceName + "\n" +
 			"journalctl --disk-usage 检查当前journal使用磁盘量\n" +
+			"journalctl --rotate  \n" +
 			"journalctl --vacuum-time=2d 只保留两天的日志\n" +
 			"journalctl --vacuum-size=1G 只保留1G的日志\n" +
-			"journalctl --vacuum-files=2 只保留最近的两个日志文件\n"
-
+			"journalctl --vacuum-files=2 只保留最近的两个日志文件\n" +
+			"配置systemd自动处理旧日志文件: /etc/systemd/journald.conf. 请记住，编辑配置文件后，需要重新启动journald服务: systemctl restart systemd-journald\n"
 	} else if platform == "darwin-launchd" {
 		//logCommandUsageText = "..."
 	}
