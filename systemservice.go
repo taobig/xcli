@@ -1,14 +1,16 @@
 package xcli
 
 import (
+	"context"
 	"github.com/kardianos/service"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 type SystemService struct {
-	cCtx *cli.Context
+	ctx context.Context
+	cmd *cli.Command
 
-	startCallback func(cCtx *cli.Context)
+	startCallback func(ctx context.Context, cmd *cli.Command)
 	stopCallback  func() error
 }
 
@@ -18,7 +20,7 @@ func (ss *SystemService) Start(s service.Service) error {
 }
 
 func (ss *SystemService) run() {
-	ss.startCallback(ss.cCtx)
+	ss.startCallback(ss.ctx, ss.cmd)
 }
 
 func (ss *SystemService) Stop(s service.Service) error {

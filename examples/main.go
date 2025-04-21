@@ -1,10 +1,11 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"github.com/taobig/xcli"
 	"github.com/taobig/xcli/examples/internal"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 	"os"
 )
 
@@ -23,9 +24,9 @@ func main() {
 		},
 	}
 
-	startAction := func(cCtx *cli.Context) {
-		fmt.Println("arg test:", cCtx.Bool("test")) //获取参数示例一
-		fmt.Println("arg configFile:", configFile)  //获取参数示例二
+	startAction := func(ctx context.Context, cmd *cli.Command) {
+		fmt.Println("arg test:", cmd.Bool("test")) //获取参数示例一
+		fmt.Println("arg configFile:", configFile) //获取参数示例二
 
 		fmt.Println("ENV_VAR:", os.Getenv("ENV_VAR")) //获取环境变量示例
 
@@ -76,5 +77,4 @@ func main() {
 	}
 	var commands []*cli.Command
 	xCli.Start(flags, commands)
-	return
 }
