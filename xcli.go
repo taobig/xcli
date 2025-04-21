@@ -2,10 +2,11 @@ package xcli
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"github.com/kardianos/service"
 	"github.com/sirupsen/logrus"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 	"io"
 	"os"
 	"os/exec"
@@ -19,16 +20,16 @@ var (
 	gitHash   = "" //编译时自动填充，请不要人工赋值
 
 	//workingDirectory string //参数变量
-	installArguments cli.StringSlice //参数变量
+	installArguments []string //参数变量
 )
 
 type XCli struct {
 	serviceConfig *ServiceConfig
-	startCallback func(cCtx *cli.Context)
+	startCallback func(ctx context.Context, cmd *cli.Command)
 	stopCallback  func() error
 }
 
-func New(conf *ServiceConfig, startCallback func(cCtx *cli.Context), stopCallback func() error) (*XCli, error) {
+func New(conf *ServiceConfig, startCallback func(ctx context.Context, cmd *cli.Command), stopCallback func() error) (*XCli, error) {
 	xCli := &XCli{
 		serviceConfig: conf,
 		startCallback: startCallback,
@@ -37,7 +38,7 @@ func New(conf *ServiceConfig, startCallback func(cCtx *cli.Context), stopCallbac
 	return xCli, nil
 }
 
-func (x *XCli) createSystemService(cCtx *cli.Context) (service.Service, error) {
+func (x *XCli) createSystemService(ctx context.Context, cmd *cli.Command) (service.Service, error) {
 	conf := x.serviceConfig
 	startCallback := x.startCallback
 	stopCallback := x.stopCallback
@@ -50,14 +51,11 @@ func (x *XCli) createSystemService(cCtx *cli.Context) (service.Service, error) {
 	workingDir := strings.Replace(dir, "\\", "/", -1)
 	logrus.Debugf("workingDir: %s", workingDir)
 
-	logrus.Debugf("installArguments: %+v", installArguments.String())
-	var arguments []string = installArguments.Value()
-
 	svcConfig := &service.Config{
 		Name:        conf.ServiceName,
 		DisplayName: conf.ServiceDisplayName,
 		Description: conf.ServiceDescription,
-		Arguments:   arguments,
+		Arguments:   installArguments,
 		//Executable:       "/usr/local/bin/myapp",
 		//Dependencies:     []string{"After=network.target syslog.target"},
 		//WorkingDirectory: "",
@@ -69,7 +67,8 @@ func (x *XCli) createSystemService(cCtx *cli.Context) (service.Service, error) {
 	}
 
 	ss := &SystemService{
-		cCtx:          cCtx,
+		ctx:           ctx,
+		cmd:           cmd,
 		startCallback: startCallback,
 		stopCallback:  stopCallback,
 	}
@@ -104,7 +103,7 @@ func (x *XCli) Start(flags []cli.Flag, commands []*cli.Command) {
 		{
 			Name:  "version",
 			Usage: "Show version",
-			Action: func(cCtx *cli.Context) error {
+			Action: func(ctx context.Context, cmd *cli.Command) error {
 				//flag.Parse()
 				fmt.Println("build-time:", buildTime)
 				fmt.Println("build-hash:", gitHash)
@@ -164,12 +163,12 @@ func (x *XCli) Start(flags []cli.Flag, commands []*cli.Command) {
 					//Destination: ,
 				},
 			},
-			Action: func(cCtx *cli.Context) error {
+			Action: func(ctx context.Context, cmd *cli.Command) error {
 				if platform == "linux-systemd" {
 					serviceName := x.serviceConfig.ServiceName
 					//journalctl -u xxxxx.service
 					//journalctl -f -u xxxxx.service
-					follow := cCtx.Bool("follow")
+					follow := cmd.Bool("follow")
 					if follow {
 						cmd := exec.Command("journalctl", "-f", "-u", serviceName)
 						return runCommand(cmd, "StdoutPipe")
@@ -195,12 +194,12 @@ func (x *XCli) Start(flags []cli.Flag, commands []*cli.Command) {
 					//Destination: ,
 				},
 			},
-			Action: func(cCtx *cli.Context) error {
+			Action: func(ctx context.Context, cmd *cli.Command) error {
 				if platform == "linux-systemd" {
 					serviceName := x.serviceConfig.ServiceName
 					//systemctl -l --no-pager status xxxxx.service
 					//systemctl status xxxxx.service
-					noPager := cCtx.Bool("no-pager")
+					noPager := cmd.Bool("no-pager")
 					if noPager {
 						cmd := exec.Command("systemctl", "-l", "--no-pager", "status", serviceName)
 						return runCommand(cmd, "Stdout")
@@ -216,15 +215,15 @@ func (x *XCli) Start(flags []cli.Flag, commands []*cli.Command) {
 		},
 	}
 	allCommands := append(defaultCommands, commands...)
-	app := &cli.App{
+	app := &cli.Command{
 		Name: x.serviceConfig.ServiceName,
 		//Usage: "",
 		Flags: flags,
 		//Version:     "version",
 		//HideVersion: false, //内置的查看版本命令: xxx --version/xxx -v，因为使用自定义的xxx version command，所以这里不启用
-		Action: func(cCtx *cli.Context) error {
+		Action: func(ctx context.Context, cmd *cli.Command) error {
 			//在参数解析之后createSystemService，因为其内部可能用到了command参数
-			systemService, err := x.createSystemService(cCtx)
+			systemService, err := x.createSystemService(ctx, cmd)
 			if err != nil {
 				return err
 			}
@@ -239,21 +238,21 @@ func (x *XCli) Start(flags []cli.Flag, commands []*cli.Command) {
 		Commands: allCommands,
 	}
 
-	if err := app.Run(os.Args); err != nil {
+	if err := app.Run(context.Background(), os.Args); err != nil {
 		logrus.Errorf("Error: %+v", err)
 		os.Exit(1)
 	}
 }
 
-func (x *XCli) controlAction(cCtx *cli.Context) error {
+func (x *XCli) controlAction(ctx context.Context, cmd *cli.Command) error {
 	//在参数解析之后createSystemService，因为其内部可能用到了command参数
-	systemService, err := x.createSystemService(cCtx)
+	systemService, err := x.createSystemService(ctx, cmd)
 	if err != nil {
 		return err
 	}
-	err = service.Control(systemService, cCtx.Command.Name)
+	err = service.Control(systemService, cmd.Name)
 	if err != nil {
-		logrus.Errorf("service %s failed, err: %v", cCtx.Command.Name, err)
+		logrus.Errorf("service %s failed, err: %v", cmd.Name, err)
 		return err
 	}
 	return nil
