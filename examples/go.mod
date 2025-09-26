@@ -11,3 +11,5 @@ require (
 	github.com/kardianos/service v1.2.4 // indirect
 	golang.org/x/sys v0.36.0 // indirect
 )
+
+replace github.com/taobig/xcli v1.0.1 => ../
