@@ -171,10 +171,10 @@ func (x *XCli) Start(flags []cli.Flag, commands []*cli.Command) {
 					//journalctl -f -u xxxxx.service
 					follow := cmd.Bool("follow")
 					if follow {
-						cmd := exec.Command("journalctl", "-f", "-u", serviceName)
+						cmd := exec.CommandContext(ctx, "journalctl", "-f", "-u", serviceName)
 						return runCommand(cmd, "StdoutPipe")
 					} else {
-						cmd := exec.Command("journalctl", "-u", serviceName)
+						cmd := exec.CommandContext(ctx, "journalctl", "-u", serviceName)
 						return runCommand(cmd, "StdoutWithLess")
 					}
 				} else {
@@ -202,10 +202,10 @@ func (x *XCli) Start(flags []cli.Flag, commands []*cli.Command) {
 					//systemctl status xxxxx.service
 					noPager := cmd.Bool("no-pager")
 					if noPager {
-						cmd := exec.Command("systemctl", "-l", "--no-pager", "status", serviceName)
+						cmd := exec.CommandContext(ctx, "systemctl", "-l", "--no-pager", "status", serviceName)
 						return runCommand(cmd, "Stdout")
 					} else {
-						cmd := exec.Command("systemctl", "status", serviceName)
+						cmd := exec.CommandContext(ctx, "systemctl", "status", serviceName)
 						return runCommand(cmd, "StdoutPipe")
 					}
 				} else {
