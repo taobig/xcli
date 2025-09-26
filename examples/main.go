@@ -4,6 +4,7 @@ import (
 	"context"
 	"examples/internal"
 	"fmt"
+	"log/slog"
 	"os"
 
 	"github.com/taobig/xcli"
@@ -16,6 +17,8 @@ var (
 )
 
 func main() {
+	slog.SetLogLoggerLevel(slog.LevelDebug)
+
 	var serviceConf = &xcli.ServiceConfig{
 		ServiceName:        "demoService",
 		ServiceDisplayName: "demoService",
