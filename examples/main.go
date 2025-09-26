@@ -2,11 +2,12 @@ package main
 
 import (
 	"context"
+	"examples/internal"
 	"fmt"
-	"github.com/taobig/xcli"
-	"github.com/taobig/xcli/examples/internal"
-	"github.com/urfave/cli/v3"
 	"os"
+
+	"github.com/taobig/xcli"
+	"github.com/urfave/cli/v3"
 )
 
 var (

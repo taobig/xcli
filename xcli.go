@@ -4,14 +4,15 @@ import (
 	"bufio"
 	"context"
 	"fmt"
-	"github.com/kardianos/service"
-	"github.com/sirupsen/logrus"
-	"github.com/urfave/cli/v3"
 	"io"
+	"log/slog"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+
+	"github.com/kardianos/service"
+	"github.com/urfave/cli/v3"
 )
 
 var DefaultStopCallback = func() error { return nil }
@@ -49,7 +50,7 @@ func (x *XCli) createSystemService(ctx context.Context, cmd *cli.Command) (servi
 	}
 	// 默认install service时，WorkingDirectory就是其二进制程序所在的目录。这样便于加载配置文件。
 	workingDir := strings.Replace(dir, "\\", "/", -1)
-	logrus.Debugf("workingDir: %s", workingDir)
+	slog.Debug("workingDir", "dir", workingDir)
 
 	svcConfig := &service.Config{
 		Name:        conf.ServiceName,
@@ -230,7 +231,7 @@ func (x *XCli) Start(flags []cli.Flag, commands []*cli.Command) {
 
 			err = systemService.Run()
 			if err != nil {
-				logrus.Errorf("service Run failed, err: %v", err)
+				slog.Error("service Run failed", "error", err)
 				return err
 			}
 			return nil
@@ -239,7 +240,7 @@ func (x *XCli) Start(flags []cli.Flag, commands []*cli.Command) {
 	}
 
 	if err := app.Run(context.Background(), os.Args); err != nil {
-		logrus.Errorf("Error: %+v", err)
+		slog.Error("app run error", "error", err)
 		os.Exit(1)
 	}
 }
@@ -252,7 +253,7 @@ func (x *XCli) controlAction(ctx context.Context, cmd *cli.Command) error {
 	}
 	err = service.Control(systemService, cmd.Name)
 	if err != nil {
-		logrus.Errorf("service %s failed, err: %v", cmd.Name, err)
+		slog.Error("service control failed", "command", cmd.Name, "error", err)
 		return err
 	}
 	return nil
@@ -264,11 +265,11 @@ func runCommand(cmd *exec.Cmd, outputType string) error {
 	if outputType == "StdoutPipe" {
 		pipe, err := cmd.StdoutPipe()
 		if err != nil {
-			logrus.Errorf("cmd.StdoutPipe() failed with %s", err)
+			slog.Error("StdoutPipe failed", "error", err)
 			return err
 		}
 		if err = cmd.Start(); err != nil {
-			logrus.Errorf("cmd.Start() failed with %s", err)
+			slog.Error("cmd start failed", "error", err)
 			return err
 		}
 		go func(p io.ReadCloser) {
@@ -280,7 +281,7 @@ func runCommand(cmd *exec.Cmd, outputType string) error {
 			}
 		}(pipe)
 		if err = cmd.Wait(); err != nil {
-			logrus.Errorf("cmd.Wait() failed with %s", err)
+			slog.Error("cmd wait failed", "error", err)
 			return err
 		}
 	} else if outputType == "Stdout" {
@@ -293,7 +294,7 @@ func runCommand(cmd *exec.Cmd, outputType string) error {
 		//}
 		out, err := cmd.Output()
 		if err != nil {
-			logrus.Errorf("cmd.Output() failed with %s", err)
+			slog.Error("cmd output failed", "error", err)
 			return err
 		}
 		fmt.Println(string(out))
@@ -308,11 +309,11 @@ func runCommand(cmd *exec.Cmd, outputType string) error {
 		// more是一个简单的分页器，只能向下滚动，无法向上滚动，而less是more的改进版本，可以向上和向下滚动，支持更多功能。
 		stdout, err := cmd.StdoutPipe()
 		if err != nil {
-			logrus.Errorf("cmd.StdoutPipe() failed with %s", err)
+			slog.Error("StdoutPipe failed", "error", err)
 			return err
 		}
 		if err = cmd.Start(); err != nil {
-			logrus.Errorf("cmd.Start() failed with %s", err)
+			slog.Error("cmd start failed", "error", err)
 			return err
 		}
 
@@ -320,7 +321,7 @@ func runCommand(cmd *exec.Cmd, outputType string) error {
 		moreCmd.Stdin = stdout
 		moreCmd.Stdout = os.Stdout
 		if err = moreCmd.Run(); err != nil {
-			logrus.Errorf("moreCmd.Run() failed with %s", err)
+			slog.Error("less run failed", "error", err)
 			return err
 		}
 	}
